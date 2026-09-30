@@ -4,11 +4,10 @@ Aplicação web de skincare desenvolvida a partir de um protótipo criado no Fig
 
 <div align="center">
 
-🌐 Acessar o projeto
 
 </div>
 
-💻 Sobre o projeto
+- Sobre o projeto
 
 O Skincare App é uma aplicação web desenvolvida para proporcionar uma experiência simples e intuitiva de organização e acompanhamento de uma rotina de cuidados com a pele.
 
@@ -16,7 +15,7 @@ O projeto começou na etapa de prototipação e design de interface no Figma, on
 
 Após a criação do protótipo, o design foi transformado em uma aplicação funcional utilizando tecnologias de desenvolvimento web.
 
-🎨 Design e prototipação
+- Design e prototipação
 
 Antes da implementação, a interface foi planejada e prototipada no Figma.
 
@@ -31,14 +30,14 @@ Identidade visual do aplicativo.
 
 Processo: Figma → HTML5 + CSS3 + JavaScript → GitHub Pages
 
-✨ Destaques
+- Destaques
 Interface baseada em protótipo desenvolvido no Figma;
 Design pensado para uma experiência de uso simples e intuitiva;
 Layout organizado e visual;
 Interações utilizando JavaScript;
 Estrutura desenvolvida sem dependências externas obrigatórias;
 Publicação através do GitHub Pages.
-🛠️ Tecnologias e ferramentas
+- Tecnologias e ferramentas
 Tecnologia / Ferramenta	Utilização
 Figma	Prototipação e design da interface
 HTML5	Estrutura da aplicação
@@ -47,30 +46,30 @@ JavaScript	Lógica e interações
 Git	Versionamento do projeto
 GitHub	Hospedagem e gerenciamento do código
 GitHub Pages	Publicação da aplicação
-📁 Estrutura do projeto
+- Estrutura do projeto
 Skincare-App/
 │
 ├── index.html      # Estrutura principal da aplicação
 ├── style.css       # Estilos e layout
 └── app.js          # Funcionalidades e interações
-🔄 Processo de desenvolvimento
-1. 🎨 Prototipação
+- Processo de desenvolvimento
+1. Prototipação
 
 A primeira etapa foi realizada no Figma, criando a proposta visual e o protótipo da aplicação.
 
-2. 💻 Desenvolvimento
+2. Desenvolvimento
 
 O protótipo foi convertido em código utilizando HTML5, CSS3 e JavaScript, buscando reproduzir a estrutura e a experiência planejadas na etapa de design.
 
-3. 🔧 Versionamento
+3. Versionamento
 
 O projeto foi organizado e versionado utilizando Git, com o código disponibilizado no GitHub.
 
-4. 🌐 Publicação
+4. Publicação
 
 A aplicação foi publicada utilizando o GitHub Pages, permitindo seu acesso diretamente pelo navegador.
 
-🚀 Como executar localmente
+Como executar localmente
 Clone o repositório
 git clone https://github.com/meloliveir/Skincare-App.git
 Entre na pasta
@@ -79,12 +78,12 @@ Execute o projeto
 
 Abra o arquivo index.html no navegador ou utilize uma extensão como Live Server no VS Code.
 
-🌐 Demonstração
+- Demonstração
 
 Acesse a versão publicada:
+Skincare App
 
-👉 Skincare App
-🎯 Objetivos
+- Objetivos
 
 O projeto teve como objetivos:
 
@@ -95,15 +94,7 @@ Implementar interações com JavaScript;
 Transformar um protótipo visual em uma aplicação funcional;
 Praticar versionamento com Git e GitHub;
 Publicar uma aplicação web utilizando GitHub Pages.
-📚 Aprendizados
 
-O desenvolvimento do Skincare App proporcionou experiência em diferentes etapas de criação de um produto digital, desde a concepção visual e prototipação até a implementação e publicação da aplicação.
-
-A integração entre Figma e desenvolvimento web permitiu compreender melhor como decisões de design podem ser traduzidas em estrutura, estilos e funcionalidades utilizando código.
-
-👩‍💻 Autoria
-
-Mel Oliveira
 
 Projeto acadêmico desenvolvido em 2026.
 
