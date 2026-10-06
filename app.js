@@ -141,19 +141,44 @@ Q.forEach((q, i) => SC['q' + i] = () => `<div class="c"><div class="row">${bk()}
   q[1].map(o => `<button class="op g" data-a="ch1"><i></i><span><b>${o[0]}</b><span class="mu" style="font-size:12px">${o[1]}</span></span></button>`).join('')
 }<button class="cta" data-go="${i < 4 ? 'q' + (i + 1) : 'signup'}">Continuar →</button></div>`);
 
-/* ===== Navegação ===== */
+/* ===== Navegação fluida (slide) ===== */
 const NV = [['home','home','Início'],['routine','leaf','Rotina'],['today','drop','Hoje'],['profile','user','Perfil']];
 const TAB = { home:'home', routine:'routine', routinen:'routine', today:'today', up:'today', done:'today', profile:'profile' };
+const ORD = { home:0, routine:1, routinen:1.5, today:2, up:2.3, done:2.6, profile:3 };
+const EASE = 'cubic-bezier(.32,.72,0,1)', RM = matchMedia('(prefers-reduced-motion:reduce)').matches;
+const nv = $('#nv');
+nv.insertAdjacentHTML('beforeend', NV.map(n => `<button class="nb" data-go="${n[0]}">${ic(n[1])}${n[2]}</button>`).join(''));
+const setNav = id => {
+  const i = NV.findIndex(n => n[0] === TAB[id]); nv.classList.toggle('hide', i < 0);
+  if (i >= 0) { nv.querySelector('.pill').style.transform = `translateX(${i * 100}%)`; nv.querySelectorAll('.nb').forEach((b, k) => b.classList.toggle('on', k === i)); }
+};
+/* Entrada em cascata dos blocos (vidro: fade+subida; demais: só subida, p/ não quebrar o blur) */
+const stagger = el => { if (RM) return;
+  [...el.querySelectorAll(':scope>.c>*,:scope>.hero')].forEach((n, i) => {
+    const f = n.classList.contains('g');
+    n.animate([{ transform:'translateY(18px)', opacity:f ? 0 : 1 }, { transform:'none', opacity:1 }], { duration:650, delay:200 + i * 55, easing:EASE, fill:'backwards' });
+  });
+};
 let cur = '', hist = [];
 function go(id) {
   if (cur === 'signup' && $('#nk') && $('#nk').value.trim()) S.nick = $('#nk').value.trim();
-  if (id === 'back') id = hist.pop() || 'home';
+  let back = false;
+  if (id === 'back') { id = hist.pop() || 'home'; back = true; }
   else if (cur && !TAB[id] && id !== 'welcome') hist.push(cur);
   if (id === 'welcome') hist = [];
-  cur = id;
-  const a = $('#app'); a.style.animation = 'none'; a.offsetWidth; a.style.animation = '';
-  a.innerHTML = SC[id](); a.scrollTop = 0;
-  $('#nv').innerHTML = TAB[id] ? NV.map(n => `<button class="nb${TAB[id] === n[0] ? ' on' : ''}" data-go="${n[0]}">${ic(n[1])}${n[2]}</button>`).join('') : '';
+  const prev = cur; cur = id;
+  const dir = ORD[id] != null && ORD[prev] != null ? (Math.sign(ORD[id] - ORD[prev]) || 1) : back ? -1 : 1;
+  const stage = $('#app');
+  stage.querySelectorAll('.scr.old').forEach(x => x.remove());
+  const old = stage.querySelector('.scr');
+  const el = document.createElement('div'); el.className = 'scr'; el.innerHTML = SC[id](); stage.appendChild(el);
+  setNav(id); particles(id === 'welcome');
+  if (old && !RM) {
+    old.classList.add('old'); old.style.pointerEvents = 'none';
+    old.animate([{ transform:'none' }, { transform:`translateX(${-dir * 28}%)` }], { duration:560, easing:EASE, fill:'forwards' }).onfinish = () => old.remove();
+    el.animate([{ transform:`translateX(${dir * 100}%)` }, { transform:'none' }], { duration:560, easing:EASE });
+  } else if (old) old.remove();
+  stagger(el); el.querySelectorAll('.car').forEach(initCar);
 }
 /* ===== Ações (toques) ===== */
 const single = (t, sel) => { t.parentNode.querySelectorAll(sel).forEach(x => x.classList.remove('sel')); t.classList.add('sel'); };
@@ -164,14 +189,54 @@ const A = {
   dark: t => { S.dk = !S.dk; H.dataset.t = S.dk ? 'd' : 'l'; t.querySelector('.sw').classList.toggle('on'); },
   ch: t => single(t, '.chip'), mc: t => t.classList.toggle('sel'), ch1: t => single(t, '.op')
 };
-/* Arrastar carrossel com o mouse */
-let dn;
-addEventListener('pointerdown', e => { const c = e.target.closest('.car'); if (c && e.pointerType === 'mouse') dn = { c, x:e.clientX, l:c.scrollLeft }; });
-addEventListener('pointermove', e => { if (dn) { const d = e.clientX - dn.x; if (Math.abs(d) > 4) dn.m = 1; dn.c.scrollLeft = dn.l - d; } });
-addEventListener('pointerup', () => setTimeout(() => dn = 0));
+/* ===== Carrossel: arrastar com inércia + encaixe suave + escala por distância ===== */
+let drag, anim, moved = 0;
+function initCar(c) {
+  const K = [...c.children];
+  const fx = () => { const L = c.getBoundingClientRect().left + 20;
+    K.forEach(k => { if (!k.classList.contains('pc')) return; const d = Math.min(1, Math.abs(k.getBoundingClientRect().left - L) / 268); k.style.transform = `scale(${1 - .06 * d})`; k.style.opacity = 1 - .3 * d; }); };
+  let q = 0; c.addEventListener('scroll', () => { cancelAnimationFrame(q); q = requestAnimationFrame(fx); }, { passive:true }); fx();
+  c.addEventListener('pointerdown', e => { if (e.pointerType !== 'mouse') return; cancelAnimationFrame(anim);
+    drag = { c, x:e.clientX, l:c.scrollLeft, lx:e.clientX, lt:performance.now(), v:0, m:0 }; c.classList.add('drag'); });
+}
+addEventListener('pointermove', e => { if (!drag) return; const d = e.clientX - drag.x; if (Math.abs(d) > 4) drag.m = 1;
+  drag.c.scrollLeft = drag.l - d; const t = performance.now(), dt = (t - drag.lt) || 1;
+  drag.v = .8 * drag.v + .2 * ((drag.lx - e.clientX) / dt); drag.lx = e.clientX; drag.lt = t; });
+addEventListener('pointerup', () => { const d = drag; if (!d) return; drag = null; moved = d.m; setTimeout(() => moved = 0);
+  if (!d.m) return d.c.classList.remove('drag'); glide(d.c, d.v); });
+function glide(c, v) { let last = performance.now();
+  const step = t => { const dt = t - last; last = t; c.scrollLeft += v * dt; v *= Math.pow(.94, dt / 16);
+    (Math.abs(v) > .03 && c.scrollLeft > 0 && c.scrollLeft < c.scrollWidth - c.clientWidth) ? anim = requestAnimationFrame(step) : snap(c); };
+  anim = requestAnimationFrame(step); }
+function snap(c) { const s = c.scrollLeft, K = [...c.children]; let b = 0;
+  K.forEach((k, i) => { if (Math.abs(k.offsetLeft - 20 - s) < Math.abs(K[b].offsetLeft - 20 - s)) b = i; });
+  const to = Math.max(0, Math.min(K[b].offsetLeft - 20, c.scrollWidth - c.clientWidth)), t0 = performance.now();
+  const st = t => { const p = Math.min(1, (t - t0) / 420); c.scrollLeft = s + (to - s) * (1 - Math.pow(1 - p, 3)); p < 1 ? anim = requestAnimationFrame(st) : c.classList.remove('drag'); };
+  anim = requestAnimationFrame(st); }
 document.addEventListener('click', e => {
-  if (dn && dn.m) return;
+  if (moved) return;
   const t = e.target.closest('[data-go],[data-a]'); if (!t) return;
   t.dataset.a ? A[t.dataset.a](t) : go(t.dataset.go);
 });
+
+/* ===== Partículas brilhantes (só na tela de boas-vindas) ===== */
+const cv = $('#pt'), cx = cv.getContext('2d'); let PT = [], W = 0, HH = 0, raf = 0, pto;
+const COL = ['255,255,255', '255,232,205', '238,214,255'];
+const mkP = () => ({ x:Math.random() * W, y:Math.random() * HH, r:.7 + Math.random() * 2.2, vy:-(.1 + Math.random() * .28), vx:(Math.random() - .5) * .14, p:Math.random() * 6.28, s:.5 + Math.random() * 1.1, c:COL[Math.random() * 3 | 0], star:Math.random() < .22 });
+function fit() { const r = $('#ph').getBoundingClientRect(), d = devicePixelRatio || 1; W = r.width; HH = r.height; cv.width = W * d; cv.height = HH * d; cx.setTransform(d, 0, 0, d, 0, 0); PT = Array.from({ length:46 }, mkP); }
+function tick(t) {
+  cx.clearRect(0, 0, W, HH); const dk = H.dataset.t === 'd';
+  for (const q of PT) {
+    q.x += q.vx + Math.sin(t / 2200 + q.p) * .18; q.y += q.vy; if (q.y < -12) { q.y = HH + 12; q.x = Math.random() * W; }
+    const a = .3 + .7 * Math.abs(Math.sin(t / 1100 * q.s + q.p)), col = dk ? '205,185,255' : q.c, R = q.r * 4.5;
+    const g = cx.createRadialGradient(q.x, q.y, 0, q.x, q.y, R); g.addColorStop(0, `rgba(${col},${a})`); g.addColorStop(1, `rgba(${col},0)`);
+    cx.fillStyle = g; cx.beginPath(); cx.arc(q.x, q.y, R, 0, 6.283); cx.fill();
+    if (q.star) { cx.strokeStyle = `rgba(${col},${a})`; cx.lineWidth = .8; cx.beginPath(); cx.moveTo(q.x - R, q.y); cx.lineTo(q.x + R, q.y); cx.moveTo(q.x, q.y - R); cx.lineTo(q.x, q.y + R); cx.stroke(); }
+  }
+  raf = requestAnimationFrame(tick);
+}
+function particles(on) { cv.style.opacity = on ? 1 : 0; clearTimeout(pto);
+  if (on && !raf && !RM) { fit(); raf = requestAnimationFrame(tick); }
+  if (!on) pto = setTimeout(() => { cancelAnimationFrame(raf); raf = 0; }, 950); }
+addEventListener('resize', () => { if (raf) fit(); });
 go('welcome');
